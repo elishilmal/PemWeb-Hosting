@@ -14,7 +14,6 @@ $password = getenv("MYSQLPASSWORD");
 try {
     $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
     $pdo = new PDO($dsn, $username, $password);
-    echo "Koneksi berhasil!";
 } catch (PDOException $e) {
     echo "Gagal konek: " . $e->getMessage();
 }
