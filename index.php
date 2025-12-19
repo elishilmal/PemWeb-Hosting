@@ -4,16 +4,24 @@ $nama_mhs = "Elis Hilmal Muhibah Syawalah";
 $nim = "23552011313";
 $matkul = "Pemrograman Web 1";
 
-// ================== KONEKSI DATABASE (RAILWAY) ==================
+// ================== KONEKSI DATABASE (RAILWAY) ==================w
 $host = getenv("MYSQLHOST");
-$user = getenv("MYSQLUSER");
-$pass = getenv("MYSQLPASSWORD");
-$db = getenv("MYSQLDATABASE");
 $port = getenv("MYSQLPORT");
+$dbname = getenv("MYSQLDATABASE");
+$username = getenv("MYSQLUSER");
+$password = getenv("MYSQLPASSWORD");
 
-$conn = new mysqli($host, $user, $pass, $db, $port);
-if ($conn->connect_error) {
-    die("Koneksi gagal");
+try {
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+
+    $pdo = new PDO($dsn, $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_TIMEOUT => 5
+    ]);
+} catch (PDOException $e) {
+    // JANGAN echo di production
+    error_log($e->getMessage());
+    exit;
 }
 
 // ================== CRUD PROSES ==================
