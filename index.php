@@ -4,7 +4,7 @@ $nama_mhs = "Elis Hilmal Muhibah Syawalah";
 $nim = "23552011313";
 $matkul = "Pemrograman Web 1";
 
-// ================== KONEKSI DATABASE (RAILWAY) ==================w
+// ================== KONEKSI DATABASE (RAILWAY) ==================
 $host = getenv("MYSQLHOST");
 $port = getenv("MYSQLPORT");
 $dbname = getenv("MYSQLDATABASE");
@@ -13,41 +13,48 @@ $password = getenv("MYSQLPASSWORD");
 
 try {
     $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
-
     $pdo = new PDO($dsn, $username, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_TIMEOUT => 5
     ]);
 } catch (PDOException $e) {
-    // JANGAN echo di production
     error_log($e->getMessage());
-    exit;
+    exit("Koneksi database gagal.");
 }
 
 // ================== CRUD PROSES ==================
 if (isset($_POST['simpan'])) {
     $nama = $_POST['nama'];
     $email = $_POST['email'];
-    $conn->query("INSERT INTO users (nama, email) VALUES ('$nama', '$email')");
+
+    $stmt = $pdo->prepare("INSERT INTO users (nama, email) VALUES (?, ?)");
+    $stmt->execute([$nama, $email]);
 }
 
 if (isset($_POST['update'])) {
     $id = $_POST['id'];
     $nama = $_POST['nama'];
     $email = $_POST['email'];
-    $conn->query("UPDATE users SET nama='$nama', email='$email' WHERE id='$id'");
+
+    $stmt = $pdo->prepare("UPDATE users SET nama=?, email=? WHERE id=?");
+    $stmt->execute([$nama, $email, $id]);
 }
 
 if (isset($_GET['hapus'])) {
     $id = $_GET['hapus'];
-    $conn->query("DELETE FROM users WHERE id='$id'");
+
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id=?");
+    $stmt->execute([$id]);
 }
 
 // ================== DATA EDIT ==================
 $edit = null;
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $edit = $conn->query("SELECT * FROM users WHERE id='$id'")->fetch_assoc();
+
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id=?");
+    $stmt->execute([$id]);
+    $edit = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 ?>
 <!DOCTYPE html>
@@ -61,20 +68,18 @@ if (isset($_GET['edit'])) {
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px
+            margin-top: 15px;
         }
 
-        th,
-        td {
+        th, td {
             border: 1px solid #ccc;
             padding: 8px;
-            text-align: center
+            text-align: center;
         }
 
-        input,
-        button {
+        input, button {
             padding: 8px;
-            margin: 5px
+            margin: 5px;
         }
     </style>
 </head>
@@ -103,9 +108,11 @@ if (isset($_GET['edit'])) {
             <form method="post">
                 <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
 
-                <input type="text" name="nama" placeholder="Nama" value="<?= $edit['nama'] ?? '' ?>" required>
+                <input type="text" name="nama" placeholder="Nama"
+                       value="<?= $edit['nama'] ?? '' ?>" required>
 
-                <input type="email" name="email" placeholder="Email" value="<?= $edit['email'] ?? '' ?>" required>
+                <input type="email" name="email" placeholder="Email"
+                       value="<?= $edit['email'] ?? '' ?>" required>
 
                 <button type="submit" name="<?= $edit ? 'update' : 'simpan' ?>">
                     <?= $edit ? 'Update' : 'Simpan' ?>
@@ -122,9 +129,9 @@ if (isset($_GET['edit'])) {
                 </tr>
 
                 <?php
-                $data = $conn->query("SELECT * FROM users");
-                while ($row = $data->fetch_assoc()) {
-                    ?>
+                $data = $pdo->query("SELECT * FROM users ORDER BY id DESC");
+                while ($row = $data->fetch(PDO::FETCH_ASSOC)) {
+                ?>
                     <tr>
                         <td><?= $row['id'] ?></td>
                         <td><?= $row['nama'] ?></td>
