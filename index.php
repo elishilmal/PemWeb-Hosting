@@ -13,13 +13,10 @@ $password = getenv("MYSQLPASSWORD");
 
 try {
     $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
-    $pdo = new PDO($dsn, $username, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_TIMEOUT => 5
-    ]);
+    $pdo = new PDO($dsn, $username, $password);
+    echo "Koneksi berhasil!";
 } catch (PDOException $e) {
-    error_log($e->getMessage());
-    exit("Koneksi database gagal.");
+    echo "Gagal konek: " . $e->getMessage();
 }
 
 // ================== CRUD PROSES ==================
